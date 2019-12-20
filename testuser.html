@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title></title>
+		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Track Your Shipments</title>
+		<link rel="stylesheet" type="text/css" href="css/normalize.css" />
+		<link rel="stylesheet" type="text/css" href="css/vicons-font.css" />
+		<link rel="stylesheet" type="text/css" href="css/base.css" />
+		<link rel="stylesheet" type="text/css" href="css/buttons.css" />
+	</head>
+	
+	  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBH8MCuVA3q4nmYQNoGbSZvkMxHLF-5RII"
+  type="text/javascript"></script>
+	<script src="./web3.min.js"></script>
+	<script src="./abi.js"></script>
+	<script src="./shippingcompany.js"></script>
+	<body>
+	<style>
+.hider {visibility: hidden}
+
+.form {
+        margin: 0 auto;
+        width: 350px;
+    }
+    .form label{
+        display: inline-block;
+        text-align: right;
+        float: left;
+    }
+    .form input{
+        display: inline-block;
+        text-align: left;
+        float: right;
+    }
+</style>
+		<script>
+		function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+		var map;
+		function loadMap() {
+			var mapOptions = {
+			center:new google.maps.LatLng(17.240498, 82.287598), 
+			zoom:2, 
+			mapTypeId:google.maps.MapTypeId.ROADMAP
+			};
+			map = new google.maps.Map(document.getElementById("sample"),mapOptions);
+			}
+			google.maps.event.addDomListener(window, 'load', loadMap);
+			window.addEventListener('load', async () => {
+			    // Modern dapp browsers...
+			    if (window.ethereum) {
+			        window.web3 = new Web3(ethereum);
+			        try {
+			            // Request account access if needed
+			            await ethereum.enable();
+						globalAddress = (await web3.eth.getAccounts())[0]
+			        } catch (error) {
+			            // User denied account access...
+			        }
+			    }
+			    // Legacy dapp browsers...
+			    else if (window.web3) {
+			        window.web3 = new Web3(web3.currentProvider);
+			        var accounts = await web3.eth.getAccounts();
+					currentAccount = accounts[0];
+			    }
+			    // Non-dapp browsers...
+			    else {
+			        console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+			    }
+			});
+
+			 function addMarker(location) {
+        marker = new google.maps.Marker({
+            position: location,
+            map: map
+        });
+    }
+	
+	function selectContract() { 
+	var address = document.getElementById("Adress").value;
+	globalContract = new web3.eth.Contract(deliveryabi, address);
+	for(var i = 0; i<document.getElementsByClassName("hider").length; i++){document.getElementsByClassName("hider")[i].style.visibility = "visible"}
+	sleep(500).then(() => { updateDisplay(); 
+		globalContract.events.LocationUpdated({},(err, location)=>{console.log(location.returnValues.location);codeAddress(location.returnValues.location)})
+		globalContract.events.OrderDelivered({},(err, location)=>{alert("DELIVERED!")});
+		});
+ }
+	
+	function codeAddress(address) 
+{
+
+    var newlocation = new google.maps.LatLng( (Math.random()*(85*2)-85), (Math.random()*(180*2)-180) );
+      map.panTo(newlocation);//center the map over the result
+      //place a marker at the location
+      var marker = new google.maps.Marker(
+      {
+          map: map,
+          position: newlocation
+      });
+
+  
+}
+			 function TestMarker() {
+           codeAddress("CentralPark");
+    }
+			var globalAddress;
+			var globalContract;
+			var currentAddress;
+
+
+			function pay() {
+				try {
+					contract.methods.payForTicket().send({from: currentAccount, gas: 5000000, value: 1000000000000000000}).then(function (result, error) {
+						if (!error) {
+							console.log(result);
+						} else {
+							console.log(error);
+						}
+					});
+				}
+				catch (err) {
+					console.log(err);
+				}
+			}
+
+			function claim() {
+				try {
+					contract.methods.claim().send({from: currentAccount, gas: 5000000}).then(function (result, error) {
+						if (!error) {
+							console.log(result);
+						} else {
+							console.log(error);
+						}
+					});
+				}
+				catch (err) {
+					console.log(err);
+				}
+			}
+
+			function updateDisplay(){
+			TestMarker();
+				try {
+					globalContract.methods.order().call({from: globalAddress}).then((result, error) => {
+						if (!error) {
+							document.getElementById("Goods").value = result[0];
+							document.getElementById("quantity").value = result[1];
+							document.getElementById("price").value = result[2];
+							document.getElementById("Discount").value = result[3];
+							document.getElementById("LocationFrequency").value = result[7];
+							document.getElementById("DeliveryLocation").value = result[6];
+							document.getElementById("DeliveryTime").value = result[4];
+							document.getElementById("Accepted").value = result[8];
+							console.log(result);
+						} else {
+							console.log(error);
+						}
+					});
+				}
+				catch (err) {
+					console.log(err);
+				}
+			}
+
+
+			async function deposit(){
+				await globalContract.methods.agreeToTerms().send({from: globalAddress, value: parseInt(document.getElementById("price").value)}).then((res, err)=>{if(!err){console.log(res)}else{console.log(err)}})
+			}
+						async function refund(){
+				await globalContract.methods.RefundUndelivered().send({from: globalAddress}).then((res, err)=>{if(!err){alert("refunded"); console.log(res)}else{console.log(err)}})
+			}
+		</script>
+		<center>
+			<div id="metamask"></div>
+			<h1>Track Your Shipments!</h1>
+			<br />
+			<form id="PlaceOrder">
+				<table class = "form" style = " float: left; margin-left: 200px;">
+					<tr>
+						<td class = "">
+						<label class="move">Adress:</label>
+							<input id="Adress" type="text" required />
+						</td>
+					</tr>
+					<tr>
+						<td class = "hider">
+						<label class="move">Goods:</label>
+							<input id="Goods"  type="text" required/>
+						</td>
+					</tr>
+					<tr>
+						<td class = "hider">
+						<label class="move">Quantity:</label>
+							<input id="quantity" type="number" required />
+						</td>
+					</tr>
+					<tr>
+						<td class = "hider">
+						<label class="move">Price:</label>
+							<input id="price" type="number" required/>
+						</td>
+					</tr>
+					<tr>
+						<td class = "hider">
+						<label class="move">Discount:</label>
+							<input id="Discount" type="number" required/>
+						</td>
+					</tr>
+										<tr>
+						<td class = "hider"> 
+						<label class="move">LocationFrequency:</label>
+							<input id="LocationFrequency" type="number" required/>
+						</td>
+					</tr>
+										<tr>
+						<td class = "hider">
+						<label class="move">DeliveryLocation:</label>
+							<input id="DeliveryLocation" type="text" required/>
+						</td>
+					</tr>
+										<tr>
+						<td class = "hider">
+						<label class="move">DeliveryTime:</label>
+							<input id="DeliveryTime" type="number" required/>
+						</td>
+					</tr>
+															<tr>
+						<td class = "hider">
+						<label class="move">Accepted:</label>
+							<input id="Accepted" type="text" required/>
+						</td>
+					<tr>
+						<td>
+							<button id="Offer" type="button" class = "button button--winona button--border-thin button--round-s" data-text="Select Contract" onclick="selectContract()">
+							<span>Select Contract</span>
+							</button>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<button id="BUtton2" type="button" class = "hider button button--winona button--border-thin button--round-s" data-text="update" onclick="updateDisplay()">
+							<span>update</span>
+							</button>
+						</td>
+					</tr>
+					<tr>
+						<td>
+							<button id="BUtton3" type="button" class = "hider button button--winona button--border-thin button--round-s" data-text="agree and deposit" onclick="deposit()">
+							<span>agree and deposit</span>
+							</button>
+						</td>
+					</tr>
+										<tr>
+						<td>
+							<button id="BUtton4" type="button" class = "hider button button--winona button--border-thin button--round-s" data-text="refund if late" onclick="refund()">
+							<span>refund if late</span>
+							</button>
+						</td>
+					</tr>
+				</table>
+			</form>
+			<div id = "sample" style = "width:900px; height:580px; right: 316px;"></div>
+		</center>
+	</body>
+</html>
