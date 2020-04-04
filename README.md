@@ -22,8 +22,8 @@ After. If the package is late the buyer is allowed to take out all the deposited
 
 ## Requirements 
 
-Metamask plugin adn browser that supports it
+Metamask plugin and browser that supports it
 
 Hosted website - I hosted it in window IIS localhost
 
-Acces to an ethereum blockhain acccount, tested with ganache localy, in remix IDE and with ROPSTEN test network
+Access to an ethereum blockhain acccount, tested with ganache localy, in remix IDE and with ROPSTEN test network
