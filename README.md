@@ -18,7 +18,7 @@ After. If the package is late the buyer is allowed to take out all the deposited
 
 ## The interface
 
-![alt text](https://cdn.discordapp.com/attachments/629684491287265280/657510643011682313/unknown.png "user interface")
+![alt text](https://github.com/Rytisgit/SmartContracts-Web3/blob/master/Interface.png "user interface")
 
 ## Requirements 
 
